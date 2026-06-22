@@ -1,0 +1,476 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Advanced Scientific Calculator</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            display: flex;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            max-width: 1000px;
+            width: 100%;
+            overflow: hidden;
+            min-height: 600px;
+        }
+
+        .sidebar {
+            width: 200px;
+            background: linear-gradient(180deg, #667eea 0%, #764ba2 100%);
+            padding: 20px 0;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .sidebar-tab {
+            padding: 15px 20px;
+            color: white;
+            cursor: pointer;
+            border-left: 4px solid transparent;
+            transition: all 0.3s;
+            font-weight: 500;
+            font-size: 14px;
+            text-align: left;
+        }
+
+        .sidebar-tab:hover {
+            background: rgba(255, 255, 255, 0.1);
+            transform: translateX(5px);
+        }
+
+        .sidebar-tab.active {
+            background: rgba(255, 255, 255, 0.2);
+            border-left-color: white;
+        }
+
+        .main-content {
+            flex: 1;
+            padding: 30px;
+            display: flex;
+            flex-direction: column;
+            overflow-y: auto;
+        }
+
+        h1 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 20px;
+            font-size: 26px;
+        }
+
+        .display {
+            background: linear-gradient(135deg, #f5f5f5 0%, #e8e8e8 100%);
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+            text-align: right;
+            min-height: 100px;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-end;
+        }
+
+        .prev-operand {
+            color: #999;
+            font-size: 18px;
+            min-height: 24px;
+            margin-bottom: 5px;
+        }
+
+        .curr-operand {
+            color: #333;
+            font-size: 40px;
+            font-weight: bold;
+            word-wrap: break-word;
+            word-break: break-all;
+            min-height: 50px;
+        }
+
+        .content-section {
+            display: none;
+            flex: 1;
+            overflow-y: auto;
+        }
+
+        .content-section.active {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .button-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+
+        .btn {
+            padding: 18px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.2s;
+            background: #f0f0f0;
+            color: #333;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .btn:hover {
+            background: #e0e0e0;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+        }
+
+        .btn:active {
+            transform: translateY(0);
+        }
+
+        .btn.operator {
+            background: #667eea;
+            color: white;
+        }
+
+        .btn.operator:hover {
+            background: #5568d3;
+        }
+
+        .btn.equals {
+            background: #48bb78;
+            color: white;
+            grid-column: span 2;
+        }
+
+        .btn.equals:hover {
+            background: #38a169;
+        }
+
+        .btn.clear {
+            background: #f56565;
+            color: white;
+        }
+
+        .btn.clear:hover {
+            background: #e53e3e;
+        }
+
+        .btn.delete {
+            background: #ed8936;
+            color: white;
+        }
+
+        .btn.delete:hover {
+            background: #dd6b20;
+        }
+
+        .function-buttons {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+
+        .func-btn {
+            padding: 12px;
+            background: #764ba2;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.2s;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .func-btn:hover {
+            background: #653a8f;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+        }
+
+        .input-group {
+            margin-bottom: 15px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+            color: #333;
+            font-size: 14px;
+        }
+
+        input, select, textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 14px;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        input:focus, select:focus, textarea:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 5px rgba(102, 126, 234, 0.3);
+        }
+
+        .matrix-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 5px;
+            margin-bottom: 10px;
+        }
+
+        .matrix-input {
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            text-align: center;
+            font-size: 12px;
+        }
+
+        .history {
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 2px solid #e0e0e0;
+        }
+
+        .history-title {
+            font-weight: bold;
+            color: #666;
+            margin-bottom: 10px;
+            font-size: 13px;
+        }
+
+        .history-item {
+            padding: 8px;
+            background: #f5f5f5;
+            margin: 5px 0;
+            border-radius: 4px;
+            font-size: 12px;
+            color: #333;
+            cursor: pointer;
+            transition: all 0.2s;
+            border-left: 3px solid #667eea;
+        }
+
+        .history-item:hover {
+            background: #e8e8e8;
+            transform: translateX(3px);
+        }
+
+        .result-display {
+            background: #e8f5e9;
+            border-left: 4px solid #48bb78;
+            padding: 15px;
+            border-radius: 6px;
+            margin: 10px 0;
+            color: #2d5016;
+            font-size: 14px;
+            line-height: 1.6;
+            font-family: 'Courier New', monospace;
+            white-space: pre-wrap;
+            word-break: break-all;
+        }
+
+        @media (max-width: 1024px) {
+            .container {
+                flex-direction: column;
+            }
+
+            .sidebar {
+                width: 100%;
+                flex-direction: row;
+                overflow-x: auto;
+            }
+
+            .sidebar-tab {
+                flex: 1;
+                text-align: center;
+                white-space: nowrap;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Sidebar -->
+        <div class="sidebar">
+            <div class="sidebar-tab active" onclick="switchTab('basic', event)">🔢 Basic</div>
+            <div class="sidebar-tab" onclick="switchTab('trig', event)">📐 Trig</div>
+            <div class="sidebar-tab" onclick="switchTab('matrix', event)">🔢 Matrix</div>
+            <div class="sidebar-tab" onclick="switchTab('stats', event)">📊 Stats</div>
+            <div class="sidebar-tab" onclick="switchTab('permcomb', event)">🎲 Perm</div>
+            <div class="sidebar-tab" onclick="switchTab('extra', event)">⚡ Extra</div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="main-content">
+            <h1>🧮 Advanced Calculator</h1>
+
+            <!-- Display -->
+            <div class="display">
+                <div class="prev-operand" id="prevOperand"></div>
+                <div class="curr-operand" id="currOperand">0</div>
+            </div>
+
+            <!-- BASIC TAB -->
+            <div class="content-section active" id="basicTab">
+                <div class="button-grid">
+                    <button class="btn clear" onclick="calc.clear()">AC</button>
+                    <button class="btn delete" onclick="calc.delete()">DEL</button>
+                    <button class="btn" onclick="calc.number('.')">.​</button>
+                    <button class="btn operator" onclick="calc.operation('÷')">÷</button>
+                    <button class="btn" onclick="calc.number('7')">7</button>
+                    <button class="btn" onclick="calc.number('8')">8</button>
+                    <button class="btn" onclick="calc.number('9')">9</button>
+                    <button class="btn operator" onclick="calc.operation('×')">×</button>
+                    <button class="btn" onclick="calc.number('4')">4</button>
+                    <button class="btn" onclick="calc.number('5')">5</button>
+                    <button class="btn" onclick="calc.number('6')">6</button>
+                    <button class="btn operator" onclick="calc.operation('-')">−</button>
+                    <button class="btn" onclick="calc.number('1')">1</button>
+                    <button class="btn" onclick="calc.number('2')">2</button>
+                    <button class="btn" onclick="calc.number('3')">3</button>
+                    <button class="btn operator" onclick="calc.operation('+')">+</button>
+                    <button class="btn" onclick="calc.number('0')" style="grid-column: span 2;">0</button>
+                    <button class="btn equals" onclick="calc.compute()">=</button>
+                </div>
+                <div class="history">
+                    <div class="history-title">📜 History</div>
+                    <div id="basicHistory"></div>
+                </div>
+            </div>
+
+            <!-- TRIGONOMETRIC TAB -->
+            <div class="content-section" id="trigTab">
+                <div class="input-group">
+                    <label>Enter angle in degrees:</label>
+                    <input type="number" id="trigAngle" placeholder="0" value="0">
+                </div>
+                <div class="function-buttons">
+                    <button class="func-btn" onclick="calcTrig('sin')">sin(x)</button>
+                    <button class="func-btn" onclick="calcTrig('cos')">cos(x)</button>
+                    <button class="func-btn" onclick="calcTrig('tan')">tan(x)</button>
+                    <button class="func-btn" onclick="calcTrig('cot')">cot(x)</button>
+                    <button class="func-btn" onclick="calcTrig('sec')">sec(x)</button>
+                    <button class="func-btn" onclick="calcTrig('csc')">csc(x)</button>
+                    <button class="func-btn" onclick="calcTrig('sinh')">sinh(x)</button>
+                    <button class="func-btn" onclick="calcTrig('cosh')">cosh(x)</button>
+                    <button class="func-btn" onclick="calcTrig('tanh')">tanh(x)</button>
+                    <button class="func-btn" onclick="calcTrig('asin')">asin(x)</button>
+                    <button class="func-btn" onclick="calcTrig('acos')">acos(x)</button>
+                    <button class="func-btn" onclick="calcTrig('atan')">atan(x)</button>
+                </div>
+                <div class="result-display" id="trigResult"></div>
+            </div>
+
+            <!-- MATRIX TAB -->
+            <div class="content-section" id="matrixTab">
+                <div class="input-group">
+                    <label>Matrix Size:</label>
+                    <select id="matrixSize" onchange="renderMatrixInputs()">
+                        <option value="2">2×2</option>
+                        <option value="3">3×3</option>
+                        <option value="4">4×4</option>
+                    </select>
+                </div>
+                <label style="margin-bottom: 10px;">Enter Matrix Values:</label>
+                <div id="matrixInputArea" style="margin-bottom: 15px;"></div>
+                <div class="function-buttons">
+                    <button class="func-btn" onclick="calcMatrix('det')" style="grid-column: span 2;">Determinant</button>
+                    <button class="func-btn" onclick="calcMatrix('trace')" style="grid-column: span 2;">Trace</button>
+                    <button class="func-btn" onclick="calcMatrix('transpose')" style="grid-column: span 2;">Transpose</button>
+                    <button class="func-btn" onclick="calcMatrix('inverse')" style="grid-column: span 2;">Inverse</button>
+                </div>
+                <div class="result-display" id="matrixResult"></div>
+            </div>
+
+            <!-- STATISTICS TAB -->
+            <div class="content-section" id="statsTab">
+                <div class="input-group">
+                    <label>Enter numbers (comma-separated):</label>
+                    <textarea id="statsInput" placeholder="1, 2, 3, 4, 5" rows="4"></textarea>
+                </div>
+                <div class="function-buttons">
+                    <button class="func-btn" onclick="calcStats('mean')">Mean</button>
+                    <button class="func-btn" onclick="calcStats('median')">Median</button>
+                    <button class="func-btn" onclick="calcStats('mode')">Mode</button>
+                    <button class="func-btn" onclick="calcStats('stdev')">Std Dev</button>
+                    <button class="func-btn" onclick="calcStats('variance')">Variance</button>
+                    <button class="func-btn" onclick="calcStats('range')">Range</button>
+                    <button class="func-btn" onclick="calcStats('sum')">Sum</button>
+                    <button class="func-btn" onclick="calcStats('count')">Count</button>
+                </div>
+                <div class="result-display" id="statsResult"></div>
+            </div>
+
+            <!-- PERMUTATION & COMBINATION TAB -->
+            <div class="content-section" id="permcombTab">
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px;">
+                    <div class="input-group">
+                        <label>n (total items):</label>
+                        <input type="number" id="permN" placeholder="5" min="0">
+                    </div>
+                    <div class="input-group">
+                        <label>r (items to select):</label>
+                        <input type="number" id="permR" placeholder="3" min="0">
+                    </div>
+                </div>
+                <div class="function-buttons">
+                    <button class="func-btn" onclick="calcPermComb('perm')" style="grid-column: span 2;">nPr - Permutation</button>
+                    <button class="func-btn" onclick="calcPermComb('comb')" style="grid-column: span 2;">nCr - Combination</button>
+                </div>
+                <div class="result-display" id="permcombResult"></div>
+            </div>
+
+            <!-- EXTRA FUNCTIONS TAB -->
+            <div class="content-section" id="extraTab">
+                <div class="input-group">
+                    <label>Enter a number:</label>
+                    <input type="number" id="extraNumber" placeholder="0" value="0">
+                </div>
+                <div class="function-buttons">
+                    <button class="func-btn" onclick="calcExtra('sqrt')">√</button>
+                    <button class="func-btn" onclick="calcExtra('cbrt')">∛</button>
+                    <button class="func-btn" onclick="calcExtra('square')">x²</button>
+                    <button class="func-btn" onclick="calcExtra('cube')">x³</button>
+                    <button class="func-btn" onclick="calcExtra('log10')">log₁₀</button>
+                    <button class="func-btn" onclick="calcExtra('ln')">ln(x)</button>
+                    <button class="func-btn" onclick="calcExtra('exp')">e^x</button>
+                    <button class="func-btn" onclick="calcExtra('abs')">|x|</button>
+                    <button class="func-btn" onclick="calcExtra('floor')">⌊x⌋</button>
+                    <button class="func-btn" onclick="calcExtra('ceil')">⌈x⌉</button>
+                    <button class="func-btn" onclick="calcExtra('round')">Round</button>
+                    <button class="func-btn" onclick="calcExtra('factorial')">x!</button>
+                </div>
+                <div class="result-display" id="extraResult"></div>
+            </div>
+        </div>
+    </div>
+
+    <script src="frontend.js"></script>
+</body>
+</html>
